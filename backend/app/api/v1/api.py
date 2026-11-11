@@ -10,7 +10,8 @@ from backend.app.api.v1.endpoints import (
     goals,
     analytics,
     ai,
-    ai_chat
+    ai_chat,
+    sync
 )
 
 api_router = APIRouter()
@@ -25,3 +26,4 @@ api_router.include_router(goals.router, prefix="/goals", tags=["Goals & Mileston
 api_router.include_router(analytics.router, prefix="/analytics", tags=["Analytics & Insights"])
 api_router.include_router(ai.router, prefix="/ai", tags=["AI Engine"])
 api_router.include_router(ai_chat.router, prefix="/ai/assistant", tags=["AI Assistant & Coach"])
+api_router.include_router(sync.router, prefix="/sync", tags=["Offline Persistence & Sync"])

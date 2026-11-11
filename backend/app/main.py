@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.app.core.config import settings
+from backend.app.core.middleware import SecurityHeadersMiddleware, RateLimitMiddleware
 from backend.app.api.v1.api import api_router
 from backend.app.database.session import engine, Base
 
@@ -14,6 +15,10 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     docs_url=f"{settings.API_V1_STR}/docs",
 )
+
+# Security and Rate Limiting Middlewares
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RateLimitMiddleware, max_requests_per_minute=30)
 
 # CORS Middleware setup
 app.add_middleware(
