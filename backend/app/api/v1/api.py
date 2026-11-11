@@ -7,7 +7,10 @@ from backend.app.api.v1.endpoints import (
     calendar,
     habits,
     focus,
-    goals
+    goals,
+    analytics,
+    ai,
+    ai_chat
 )
 
 api_router = APIRouter()
@@ -19,3 +22,6 @@ api_router.include_router(calendar.router, prefix="/calendar", tags=["Calendar &
 api_router.include_router(habits.router, prefix="/habits", tags=["Habits"])
 api_router.include_router(focus.router, prefix="/focus", tags=["Focus & Pomodoro"])
 api_router.include_router(goals.router, prefix="/goals", tags=["Goals & Milestones"])
+api_router.include_router(analytics.router, prefix="/analytics", tags=["Analytics & Insights"])
+api_router.include_router(ai.router, prefix="/ai", tags=["AI Engine"])
+api_router.include_router(ai_chat.router, prefix="/ai/assistant", tags=["AI Assistant & Coach"])

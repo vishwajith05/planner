@@ -24,6 +24,11 @@ class GoalService:
 
     def create_goal(self, db: Session, user_id: str, goal_in: GoalCreate) -> GoalResponse:
         goal_id = str(uuid.uuid4())
+        total_m = len(goal_in.milestones)
+        completed_m = sum(1 for m in goal_in.milestones if m.is_completed)
+        initial_progress = round((completed_m / total_m) * 100.0, 1) if total_m > 0 else 0.0
+        status_val = "completed" if initial_progress >= 100.0 else goal_in.status
+
         goal = Goal(
             id=goal_id,
             user_id=user_id,
@@ -31,8 +36,8 @@ class GoalService:
             description=goal_in.description,
             category=goal_in.category or "Personal",
             target_date=goal_in.target_date,
-            status=goal_in.status,
-            progress_percentage=0.0
+            status=status_val,
+            progress_percentage=initial_progress
         )
         db.add(goal)
 
