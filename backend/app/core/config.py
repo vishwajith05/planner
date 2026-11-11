@@ -1,6 +1,5 @@
 from typing import List, Union
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import AnyHttpUrl, validator
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "PlanWise AI"
@@ -13,7 +12,7 @@ class Settings(BaseSettings):
     AI_PROVIDER: str = "mock"  # "mock" or "gemini"
     GEMINI_API_KEY: str = ""
 
-    SECRET_KEY: str = "planwise-secret-key-development"
+    SECRET_KEY: str = "planwise-ai-super-secure-jwt-secret-key-32-chars-long-minimum-phase2"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
 
     model_config = SettingsConfigDict(

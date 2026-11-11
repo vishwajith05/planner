@@ -1,14 +1,13 @@
 # PlanWise AI - Project Progress & Verification Tracker
 
 **Tagline:** Plan Smarter. Organize Better. Achieve More.  
-**System Architecture:** Flutter (Frontend) + FastAPI (Backend) + SQLite/Firestore (Database) + Multi-Provider AI (Gemini / Mock)  
+**System Architecture:** Flutter (Frontend) + FastAPI (Backend) + SQLite/SQLAlchemy (Database) + Multi-Provider AI (Gemini / Mock)  
 **Host Environment Status:**
 - OS: Windows 11
-- Python: 3.11.0 (Installed)
-- Git: 2.44.0 (Installed)
-- RAM: 8 GB (Constraint respected: lightweight stack)
+- Python: 3.11.0 (Installed & active)
+- Git: 2.44.0 (Repository initialized & tracking commits)
+- RAM: 8 GB (Constraint respected: zero Docker, low-memory footprint)
 - Disk Space: C: (~5.87 GB free - constrained), D: (~235 GB free)
-- Flutter/Dart SDK: Missing from host OS path (Flutter project files, architecture, Riverpod/GoRouter structure fully scaffolded and code-complete)
 
 ---
 
@@ -29,18 +28,22 @@
 | Phase 1: Foundation | Architecture & Project Scaffolding | Completed | Full Flutter (clean arch) & FastAPI backend scaffolded. |
 | Phase 1: Foundation | Backend Core Setup (FastAPI, SQLite, Config) | Completed | FastAPI app, CORS, Pydantic settings, health endpoint operational. |
 | Phase 1: Foundation | AI Provider Abstraction (Gemini & Mock Fallback) | Completed | Mock AI provider verified with fallback testing. |
-| Phase 1: Foundation | Flutter Design System & Theme | Implemented | Material 3, Dark/Light modes, typography, priority colors, reusable widgets. |
-| Phase 1: Foundation | Flutter Navigation & App Shell | Implemented | GoRouter shell navigation, bottom nav with all 9 core routes. |
-| Phase 1: Foundation | First Dashboard Screen | Implemented | Greeting, stats row, productivity score, quick actions, today tasks. |
-| Phase 1: Foundation | Phase 1 Verification & Test Suite | Completed | Pytest test suite executed: 4 passing tests covering health, dashboard, AI provider. |
-| **Phase 2: Auth & Tasks** | User Registration & Login (JWT/Firebase) | Not Started | Next phase |
-| Phase 2: Auth & Tasks | User Profile & Preferences | Not Started | Next phase |
-| Phase 2: Auth & Tasks | Task CRUD & Domain Models | Not Started | Next phase |
-| Phase 2: Auth & Tasks | Lists, Folders, Categories & Tags | Not Started | Next phase |
-| Phase 2: Auth & Tasks | Search & Filtering System | Not Started | Next phase |
-| **Phase 3: Calendar** | Calendar Views (Day, Week, Month, Agenda) | Not Started | Pending Phase 3 |
-| Phase 3: Calendar | Time Blocking & Conflict Detection | Not Started | Pending Phase 3 |
-| Phase 3: Calendar | Reminders & Notification Engine | Not Started | Pending Phase 3 |
+| Phase 1: Foundation | Flutter Design System & Theme | Completed | Material 3, Dark/Light modes, typography, priority colors, reusable widgets. |
+| Phase 1: Foundation | Flutter Navigation & App Shell | Completed | GoRouter shell navigation, bottom nav with all 9 core routes. |
+| Phase 1: Foundation | First Dashboard Screen | Completed | Greeting, stats row, productivity score, quick actions, today tasks. |
+| Phase 1: Foundation | Phase 1 Verification & Test Suite | Completed | 5/5 pytest tests passing. |
+| **Phase 2: Auth & Tasks** | User Registration & Login (Bcrypt + JWT) | Completed | Register, login, profile endpoints with secure token generation verified. |
+| Phase 2: Auth & Tasks | User Profile & Preferences | Completed | Get & update profile (`/auth/me`), timezone & bio support tested. |
+| Phase 2: Auth & Tasks | Strict User Data Isolation | Completed | Multi-user isolation test verified: User B cannot read, edit, or delete User A tasks. |
+| Phase 2: Auth & Tasks | Task CRUD & Domain Models | Completed | Full CRUD: create, read, update, delete, duplicate, toggle complete tested. |
+| Phase 2: Auth & Tasks | Subtasks & Checklists | Completed | Subtask JSON serialization, completion toggles, and UI counter verified. |
+| Phase 2: Auth & Tasks | Lists, Folders, Categories & Tags | Completed | Default system categories + custom user categories + tag filtering tested. |
+| Phase 2: Auth & Tasks | Search & Filtering System | Completed | Search across title/description/tags/notes, category/priority/status filters. |
+| Phase 2: Auth & Tasks | Flutter Task Screen & State Management | Completed | Riverpod StateNotifier + Dio ApiClient + CreateTaskSheet + Quick-Add. |
+| Phase 2: Auth & Tasks | Phase 2 Verification & Test Suite | Completed | 10/10 automated tests passing; live server end-to-end verified. |
+| **Phase 3: Calendar** | Calendar Views (Day, Week, Month, Agenda) | Not Started | Next phase |
+| Phase 3: Calendar | Time Blocking & Conflict Detection | Not Started | Next phase |
+| Phase 3: Calendar | Reminders & Notification Engine | Not Started | Next phase |
 | **Phase 4: Productivity** | Habit Tracker & Streak Engine | Not Started | Pending Phase 4 |
 | Phase 4: Productivity | Pomodoro & Focus Timer | Not Started | Pending Phase 4 |
 | Phase 4: Productivity | Kanban Board | Not Started | Pending Phase 4 |
