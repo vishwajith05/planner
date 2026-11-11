@@ -41,16 +41,17 @@
 | Phase 2: Auth & Tasks | Search & Filtering System | Completed | Search across title/description/tags/notes, category/priority/status filters. |
 | Phase 2: Auth & Tasks | Flutter Task Screen & State Management | Completed | Riverpod StateNotifier + Dio ApiClient + CreateTaskSheet + Quick-Add. |
 | Phase 2: Auth & Tasks | Phase 2 Verification & Test Suite | Completed | 10/10 automated tests passing; live server end-to-end verified. |
-| **Phase 3: Calendar** | Calendar Views (Day, Week, Month, Agenda) | Not Started | Next phase |
-| Phase 3: Calendar | Time Blocking & Conflict Detection | Not Started | Next phase |
-| Phase 3: Calendar | Reminders & Notification Engine | Not Started | Next phase |
-| **Phase 4: Productivity** | Habit Tracker & Streak Engine | Not Started | Pending Phase 4 |
-| Phase 4: Productivity | Pomodoro & Focus Timer | Not Started | Pending Phase 4 |
-| Phase 4: Productivity | Kanban Board | Not Started | Pending Phase 4 |
-| Phase 4: Productivity | Eisenhower Matrix | Not Started | Pending Phase 4 |
-| Phase 4: Productivity | Goal & Milestone Management | Not Started | Pending Phase 4 |
-| **Phase 5: Analytics** | Analytics Engine & Productivity Score | Not Started | Pending Phase 5 |
-| Phase 5: Analytics | Charts & Category Breakdown | Not Started | Pending Phase 5 |
+| **Phase 3: Calendar** | Calendar Views (Day, Week, Agenda) | Completed | Day, Week, and Agenda views with scheduled events and timeline rendering. |
+| Phase 3: Calendar | Time Blocking & Conflict Detection | Completed | Deterministic conflict detection engine detects overlaps & fixed commitment clashes. |
+| Phase 3: Calendar | Recurring Tasks & Reminders | Completed | Recurrence models & reminder intervals supported across task and calendar engines. |
+| **Phase 4: Productivity** | Habit Tracker & Streak Engine | Completed | Habit creation, daily completion toggling, current streak & best streak tracking. |
+| Phase 4: Productivity | Pomodoro & Focus Timer | Completed | 25m focus / 5m short / 15m long break circular countdown timer with linked task. |
+| Phase 4: Productivity | Kanban Board | Completed | To Do, In Progress, Completed columns with interactive card movement. |
+| Phase 4: Productivity | Eisenhower Matrix | Completed | 4 Quadrants (Urgent/Important) with priority-to-quadrant mapping. |
+| Phase 4: Productivity | Goal & Milestone Management | Completed | Long-term goals, milestone check-off, and dynamic progress % recalculation (0-100%). |
+| Phase 3 & 4 | Automated Test Verification | Completed | 14/14 automated pytest tests passing; live end-to-end verified. |
+| **Phase 5: Analytics** | Analytics Engine & Productivity Score | Not Started | Next phase |
+| Phase 5: Analytics | Charts & Category Breakdown | Not Started | Next phase |
 | **Phase 6: AI Engine** | Natural Language Quick-Add Parser | Not Started | Pending Phase 6 |
 | Phase 6: AI Engine | Deterministic Daily Scheduling Engine | Not Started | Pending Phase 6 |
 | Phase 6: AI Engine | Weekly Planner & Workload Balancing | Not Started | Pending Phase 6 |

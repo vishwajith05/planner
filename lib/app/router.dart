@@ -9,6 +9,8 @@ import '../features/focus/presentation/screens/focus_screen.dart';
 import '../features/goals/presentation/screens/goals_screen.dart';
 import '../features/analytics/presentation/screens/analytics_screen.dart';
 import '../features/settings/presentation/screens/settings_screen.dart';
+import '../features/kanban/presentation/screens/kanban_screen.dart';
+import '../features/eisenhower/presentation/screens/eisenhower_screen.dart';
 import '../shared/widgets/bottom_nav_shell.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -85,6 +87,16 @@ final appRouter = GoRouter(
       path: '/focus',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const FocusScreen(),
+    ),
+    GoRoute(
+      path: '/kanban',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const KanbanScreen(),
+    ),
+    GoRoute(
+      path: '/eisenhower',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const EisenhowerScreen(),
     ),
     GoRoute(
       path: '/goals',
