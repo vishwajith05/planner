@@ -37,9 +37,18 @@ app.add_middleware(
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 @app.get("/")
+@app.head("/")
 async def root():
     return {
+        "status": "healthy",
         "message": f"Welcome to {settings.PROJECT_NAME} Backend",
         "docs": f"{settings.API_V1_STR}/docs",
         "health": f"{settings.API_V1_STR}/health"
     }
+
+@app.get("/health")
+@app.get("/healthz")
+@app.head("/health")
+@app.head("/healthz")
+async def root_health():
+    return {"status": "healthy"}
