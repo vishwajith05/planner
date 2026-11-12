@@ -108,6 +108,17 @@ class HabitService:
             longest_active_streak=longest
         )
 
+    def update_habit(self, db: Session, user_id: str, habit_id: str, habit_in) -> Habit:
+        habit = db.query(Habit).filter(Habit.id == habit_id, Habit.user_id == user_id).first()
+        if not habit:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Habit not found")
+        update_data = habit_in.model_dump(exclude_unset=True)
+        for field, value in update_data.items():
+            setattr(habit, field, value)
+        db.commit()
+        db.refresh(habit)
+        return habit
+
     def delete_habit(self, db: Session, user_id: str, habit_id: str) -> None:
         habit = db.query(Habit).filter(Habit.id == habit_id, Habit.user_id == user_id).first()
         if not habit:

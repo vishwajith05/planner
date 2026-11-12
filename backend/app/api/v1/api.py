@@ -11,7 +11,9 @@ from backend.app.api.v1.endpoints import (
     analytics,
     ai,
     ai_chat,
-    sync
+    sync,
+    friends,
+    couple
 )
 
 api_router = APIRouter()
@@ -27,3 +29,5 @@ api_router.include_router(analytics.router, prefix="/analytics", tags=["Analytic
 api_router.include_router(ai.router, prefix="/ai", tags=["AI Engine"])
 api_router.include_router(ai_chat.router, prefix="/ai/assistant", tags=["AI Assistant & Coach"])
 api_router.include_router(sync.router, prefix="/sync", tags=["Offline Persistence & Sync"])
+api_router.include_router(friends.router, prefix="/friends", tags=["Friend Growth"])
+api_router.include_router(couple.router, prefix="/couple", tags=["Growth Couple"])
