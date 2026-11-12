@@ -48,8 +48,15 @@ export const useAuthStore = create<AuthState>((set) => ({
         isLoading: false,
         error: null,
       });
-    } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Login failed';
+    } catch (err: any) {
+      let msg = err?.response?.data?.detail;
+      if (!msg) {
+        if (err?.message === 'Network Error' || !err?.response) {
+          msg = 'Cannot connect to backend server. Please verify VITE_API_URL in Vercel settings and ensure your Render backend is running.';
+        } else {
+          msg = err?.message || 'Login failed';
+        }
+      }
       set({ error: msg, isLoading: false });
       throw new Error(msg);
     }
@@ -73,8 +80,15 @@ export const useAuthStore = create<AuthState>((set) => ({
         isLoading: false,
         error: null,
       });
-    } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'Registration failed';
+    } catch (err: any) {
+      let msg = err?.response?.data?.detail;
+      if (!msg) {
+        if (err?.message === 'Network Error' || !err?.response) {
+          msg = 'Cannot connect to backend server. Please verify VITE_API_URL in Vercel settings and ensure your Render backend is running.';
+        } else {
+          msg = err?.message || 'Registration failed';
+        }
+      }
       set({ error: msg, isLoading: false });
       throw new Error(msg);
     }

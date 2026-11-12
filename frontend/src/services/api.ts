@@ -10,6 +10,7 @@ const getBaseUrl = (): string => {
 };
 
 const BASE_URL = getBaseUrl();
+export const API_BASE_URL = BASE_URL;
 
 const createApiClient = (): AxiosInstance => {
   const client = axios.create({

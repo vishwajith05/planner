@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { Button } from '../../components/common/Button';
+import { API_BASE_URL } from '../../services/api';
 import { BrainCircuit, Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react';
 
 export const Login: React.FC = () => {
@@ -113,6 +114,10 @@ export const Login: React.FC = () => {
           <Link to="/register" className="font-semibold text-violet-600 dark:text-violet-400 hover:underline">
             Create account
           </Link>
+        </p>
+
+        <p className="text-center text-[10px] text-gray-400 dark:text-gray-500 mt-3 truncate" title={API_BASE_URL}>
+          Connected to: <span className="font-mono text-violet-500">{API_BASE_URL}</span>
         </p>
       </div>
     </div>
