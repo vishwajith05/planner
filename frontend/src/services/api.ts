@@ -1,6 +1,15 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+const getBaseUrl = (): string => {
+  let url = (import.meta.env.VITE_API_URL as string) || 'http://localhost:8000/api/v1';
+  url = url.trim().replace(/\/+$/, '');
+  if (!url.endsWith('/api/v1')) {
+    url = `${url}/api/v1`;
+  }
+  return url;
+};
+
+const BASE_URL = getBaseUrl();
 
 const createApiClient = (): AxiosInstance => {
   const client = axios.create({
@@ -18,14 +27,18 @@ const createApiClient = (): AxiosInstance => {
     return config;
   });
 
-  // Response interceptor: handle 401
+  // Response interceptor: handle 401 on expired sessions only (not login/register)
   client.interceptors.response.use(
     (response) => response,
     (error) => {
-      if (error.response?.status === 401) {
+      const url = error.config?.url || '';
+      const isAuthAttempt = url.includes('/auth/login') || url.includes('/auth/register');
+      if (error.response?.status === 401 && !isAuthAttempt) {
         localStorage.removeItem('planwise_token');
         localStorage.removeItem('planwise_user');
-        window.location.href = '/login';
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
       }
       return Promise.reject(error);
     }
