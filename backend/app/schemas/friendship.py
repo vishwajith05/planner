@@ -6,7 +6,9 @@ from datetime import datetime
 # ── Friendship ──────────────────────────────────────────────────────────────
 
 class FriendRequest(BaseModel):
-    addressee_email: str = Field(..., description="Email of the user to send friend request to")
+    addressee_email: Optional[str] = Field(None, description="Email of the user to send friend request to")
+    friend_id: Optional[str] = Field(None, description="User ID of the friend to connect with")
+    addressee_id: Optional[str] = Field(None, description="User ID of the addressee")
 
 
 class FriendRequestResponse(BaseModel):
@@ -66,9 +68,37 @@ class ChallengeProgressUpdate(BaseModel):
 # ── Encouragement Messages ──────────────────────────────────────────────────
 
 class EncouragementCreate(BaseModel):
-    recipient_id: str
-    message: str = Field(..., min_length=1, max_length=500)
+    recipient_id: Optional[str] = None
+    friend_id: Optional[str] = None
+    message: Optional[str] = None
+    content: Optional[str] = None
     challenge_id: Optional[str] = None
+
+class DirectMessageCreate(BaseModel):
+    recipient_id: Optional[str] = None
+    friend_id: Optional[str] = None
+    content: Optional[str] = None
+    message: Optional[str] = None
+    challenge_id: Optional[str] = None
+
+class DirectMessageResponse(BaseModel):
+    id: str
+    sender_id: str
+    sender_name: str
+    recipient_id: str
+    recipient_name: Optional[str] = None
+    content: str
+    is_read: bool
+    created_at: str
+
+class ConversationSummary(BaseModel):
+    friend_id: str
+    friend_name: str
+    friend_email: str
+    last_message: Optional[str] = None
+    last_message_at: Optional[str] = None
+    last_message_sender_id: Optional[str] = None
+    unread_count: int = 0
 
 
 class EncouragementResponse(BaseModel):

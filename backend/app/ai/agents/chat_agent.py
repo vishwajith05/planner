@@ -1,26 +1,181 @@
 """
-Conversational AI Agent — Natural language productivity assistant.
-Can process natural queries, inspect user state, generate action proposals
-(such as schedule daily, reschedule overdue, break down goals), and deliver
-conversational coaching.
+Conversational AI Agent — Natural language productivity assistant with Agentic Tool Architecture.
+Executes lightweight tool-calling (get_user_tasks, create_task, get_user_goals,
+get_productivity_stats, get_calendar_events) using strict user data isolation.
 """
 
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
+import uuid
 
 from backend.app.models.task import Task
-from backend.app.models.goal import Goal
+from backend.app.models.goal import Goal, Milestone
+from backend.app.models.calendar_event import CalendarEvent
 from backend.app.services.ai_service import ai_service
 from backend.app.ai.agents.productivity_coach import productivity_coach
 from backend.app.schemas.ai import ChatResponse, GoalBreakdownResponse, MilestoneSuggestion
 
 
 class ChatAgent:
+    """Agentic productivity assistant with integrated database tools."""
+
+    # ── AGENTIC TOOLS ───────────────────────────────────────────────────────
+
+    def tool_get_user_tasks(
+        self, db: Session, user_id: str, is_completed: Optional[bool] = None, limit: int = 10
+    ) -> List[Dict[str, Any]]:
+        query = db.query(Task).filter(Task.user_id == user_id)
+        if is_completed is not None:
+            query = query.filter(Task.is_completed == is_completed)
+        tasks = query.order_by(Task.due_date.asc().nullslast(), Task.created_at.desc()).limit(limit).all()
+        return [
+            {
+                "id": t.id,
+                "title": t.title,
+                "priority": t.priority,
+                "category": t.category,
+                "is_completed": t.is_completed,
+                "due_date": t.due_date.isoformat() if t.due_date else None,
+            }
+            for t in tasks
+        ]
+
+    def tool_create_task(
+        self,
+        db: Session,
+        user_id: str,
+        title: str,
+        priority: str = "medium",
+        category: str = "Personal",
+        due_date: Optional[datetime] = None,
+    ) -> Dict[str, Any]:
+        task = Task(
+            id=str(uuid.uuid4()),
+            user_id=user_id,
+            title=title,
+            priority=priority,
+            category=category,
+            due_date=due_date,
+            status="not_started",
+            is_completed=False,
+        )
+        db.add(task)
+        db.commit()
+        db.refresh(task)
+        return {
+            "id": task.id,
+            "title": task.title,
+            "priority": task.priority,
+            "category": task.category,
+            "is_completed": task.is_completed,
+        }
+
+    def tool_get_user_goals(self, db: Session, user_id: str) -> List[Dict[str, Any]]:
+        goals = db.query(Goal).filter(Goal.user_id == user_id).all()
+        return [
+            {
+                "id": g.id,
+                "title": g.title,
+                "category": g.category,
+                "progress_percentage": g.progress_percentage,
+                "status": g.status,
+                "milestones_count": len(g.milestones) if g.milestones else 0,
+            }
+            for g in goals
+        ]
+
+    def tool_get_calendar_events(self, db: Session, user_id: str) -> List[Dict[str, Any]]:
+        now = datetime.utcnow()
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        events = db.query(CalendarEvent).filter(
+            CalendarEvent.user_id == user_id,
+            CalendarEvent.start_time >= today_start,
+        ).order_by(CalendarEvent.start_time.asc()).limit(10).all()
+        return [
+            {
+                "id": e.id,
+                "title": e.title,
+                "start_time": e.start_time.isoformat(),
+                "end_time": e.end_time.isoformat(),
+                "category": e.category,
+            }
+            for e in events
+        ]
+
+    # ── AGENT REASONING & DISPATCH ──────────────────────────────────────────
+
     def handle_message(self, db: Session, user_id: str, message: str) -> ChatResponse:
         low = message.strip().lower()
 
-        # 1. "Plan my day" / "Schedule today"
+        # 1. Tool Call: Create Task ("create task ...", "add task ...")
+        if low.startswith("create task") or low.startswith("add task"):
+            task_title = low.replace("create task", "", 1).replace("add task", "", 1).replace(":", "").strip()
+            if not task_title:
+                task_title = "New Task"
+            priority = "high" if "urgent" in low or "!high" in low else ("low" if "!low" in low else "medium")
+            created = self.tool_create_task(db, user_id, title=task_title, priority=priority)
+            return ChatResponse(
+                reply=f"✅ Created task: **{created['title']}** (Priority: {created['priority'].capitalize()})",
+                actions=[{"type": "navigate", "destination": "tasks"}],
+                data={"task": created},
+            )
+
+        # 2. Tool Call: List Tasks ("show tasks", "list tasks", "my tasks", "what are my tasks")
+        if any(w in low for w in ["show tasks", "list tasks", "my tasks", "what are my tasks", "view tasks"]):
+            tasks = self.tool_get_user_tasks(db, user_id, limit=5)
+            if not tasks:
+                return ChatResponse(
+                    reply="You don't have any tasks right now! You can ask me to create one (e.g. *'Create task: Complete API specs'*).",
+                    actions=[{"type": "navigate", "destination": "tasks"}],
+                )
+            reply = f"Here are your upcoming tasks:\n\n"
+            for idx, t in enumerate(tasks, 1):
+                status_icon = "✅" if t["is_completed"] else "⏳"
+                reply += f"{idx}. {status_icon} **{t['title']}** ({t['priority'].capitalize()})\n"
+            return ChatResponse(
+                reply=reply,
+                actions=[{"type": "navigate", "destination": "tasks"}],
+                data={"tasks": tasks},
+            )
+
+        # 3. Tool Call: Goals ("show goals", "my goals", "what are my goals", "list goals")
+        if any(w in low for w in ["show goals", "my goals", "what are my goals", "list goals"]):
+            goals = self.tool_get_user_goals(db, user_id)
+            if not goals:
+                return ChatResponse(
+                    reply="You haven't set any long-term goals yet. Ask me *'Break down goal: Master Cybersecurity'* to get started!",
+                    actions=[{"type": "navigate", "destination": "goals"}],
+                )
+            reply = f"Here are your current goals:\n\n"
+            for idx, g in enumerate(goals, 1):
+                reply += f"{idx}. 🎯 **{g['title']}** — {g['progress_percentage']}% completed\n"
+            return ChatResponse(
+                reply=reply,
+                actions=[{"type": "navigate", "destination": "goals"}],
+                data={"goals": goals},
+            )
+
+        # 4. Tool Call: Calendar ("calendar", "events today", "what is on my calendar", "schedule")
+        if any(w in low for w in ["events today", "calendar events", "what's on my calendar"]):
+            events = self.tool_get_calendar_events(db, user_id)
+            if not events:
+                return ChatResponse(
+                    reply="You have no scheduled events on your calendar for today.",
+                    actions=[{"type": "navigate", "destination": "calendar"}],
+                )
+            reply = "Here are your scheduled events for today:\n\n"
+            for idx, ev in enumerate(events, 1):
+                start_h = ev["start_time"].split("T")[1][:5]
+                end_h = ev["end_time"].split("T")[1][:5]
+                reply += f"{idx}. 📅 **{ev['title']}** ({start_h} - {end_h})\n"
+            return ChatResponse(
+                reply=reply,
+                actions=[{"type": "navigate", "destination": "calendar"}],
+                data={"events": events},
+            )
+
+        # 5. "Plan my day" / "Schedule today"
         if any(w in low for w in ["plan my day", "schedule today", "daily schedule", "plan today"]):
             plan = ai_service.daily_schedule(db, user_id)
             scheduled = plan.get("scheduled", [])
@@ -57,7 +212,7 @@ class ChatAgent:
                 data={"plan": plan},
             )
 
-        # 2. "Overdue" / "What tasks are overdue?"
+        # 6. "Overdue" / "What tasks are overdue?"
         if any(w in low for w in ["overdue", "late", "missed tasks"]):
             now = datetime.utcnow()
             overdue_tasks = (
@@ -92,7 +247,7 @@ class ChatAgent:
                 data={"overdue_count": len(overdue_tasks)},
             )
 
-        # 3. "How is my productivity?" / "Productivity insights" / "Stats"
+        # 7. "How is my productivity?" / "Productivity insights" / "Stats"
         if any(w in low for w in ["productivity", "score", "how am i doing", "coach", "insights", "analyze"]):
             insights_res = productivity_coach.analyze(db, user_id)
             reply = f"📊 **Productivity Score: {insights_res.overall_score}/100**\n\n{insights_res.summary}\n\n**Key Observations:**\n"
@@ -106,10 +261,9 @@ class ChatAgent:
                 data={"insights": insights_res.model_dump()},
             )
 
-        # 4. "Break down goal"
-        if "break down" in low or "goal" in low:
-            # Check for a specific goal title
-            cleaned = low.replace("break down", "").replace("goal", "").replace(":", "").strip()
+        # 8. "Break down goal"
+        if "break down" in low or "breakdown" in low:
+            cleaned = low.replace("break down", "").replace("breakdown", "").replace("goal", "").replace(":", "").strip()
             title = cleaned if cleaned else "Mastering My Skills"
             breakdown = self.break_down_goal(title)
             reply = f"Here is a recommended milestone breakdown for **{breakdown.goal_title}**:\n\n"
@@ -123,11 +277,13 @@ class ChatAgent:
                 data=breakdown.model_dump(),
             )
 
-        # 5. Default natural conversational reply
+        # 9. Default natural conversational reply
         return ChatResponse(
             reply=(
                 "I'm PlanWise AI, your personal productivity architect.\n\n"
                 "Here are a few things you can ask me to do:\n"
+                "• *'Create task: Review project architecture'* to add a task\n"
+                "• *'Show tasks'* to list your current workload\n"
                 "• *'Plan my day'* to generate an energy-balanced schedule\n"
                 "• *'What tasks are overdue?'* to audit late tasks\n"
                 "• *'How is my productivity?'* for personalized coaching insights\n"
@@ -135,6 +291,7 @@ class ChatAgent:
             ),
             actions=[
                 {"type": "suggest_prompt", "text": "Plan my day"},
+                {"type": "suggest_prompt", "text": "Show tasks"},
                 {"type": "suggest_prompt", "text": "What tasks are overdue?"},
                 {"type": "suggest_prompt", "text": "How is my productivity?"},
             ],

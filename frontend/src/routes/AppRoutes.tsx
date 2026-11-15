@@ -12,7 +12,6 @@ import { CalendarPage } from '../features/calendar/CalendarPage';
 import { AIPlannerPage } from '../features/ai-planner/AIPlannerPage';
 import { HabitsPage } from '../features/habits/HabitsPage';
 import { FocusPage } from '../features/focus/FocusPage';
-import { KanbanPage } from '../features/kanban/KanbanPage';
 import { EisenhowerPage } from '../features/eisenhower/EisenhowerPage';
 import { GoalsPage } from '../features/goals/GoalsPage';
 import { FriendGrowthPage } from '../features/friend-growth/FriendGrowthPage';
@@ -61,7 +60,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="ai-planner" element={<AIPlannerPage />} />
         <Route path="habits" element={<HabitsPage />} />
         <Route path="focus" element={<FocusPage />} />
-        <Route path="kanban" element={<KanbanPage />} />
+        <Route path="kanban" element={<Navigate to="/tasks" replace />} />
         <Route path="eisenhower" element={<EisenhowerPage />} />
         <Route path="goals" element={<GoalsPage />} />
         <Route path="friends" element={<FriendGrowthPage />} />

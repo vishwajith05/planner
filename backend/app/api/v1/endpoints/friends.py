@@ -38,9 +38,10 @@ def get_pending(
     return friend_service.get_pending_requests(db, current_user.id)
 
 @router.put("/request/{friendship_id}/{action}", summary="Accept or reject a friend request")
+@router.post("/accept/{friendship_id}", summary="Accept a friend request")
 def respond_request(
     friendship_id: str,
-    action: str,
+    action: str = "accept",
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -87,7 +88,55 @@ def update_progress(
 ):
     return friend_service.update_challenge_progress(db, current_user.id, challenge_id, update)
 
-# ── Encouragement Messages ──────────────────────────────────────────────────
+# ── Friends Overview & AI Group Coach ────────────────────────────────────────
+
+@router.get("/overview", summary="Get friends overview metrics for dashboard")
+def get_friends_overview(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return friend_service.get_overview_stats(db, current_user.id)
+
+@router.get("/coach", summary="Get AI Group Coach analysis & guidance")
+def get_group_coach(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return friend_service.get_ai_group_coach(db, current_user.id)
+
+# ── Friend Messaging & Conversations ────────────────────────────────────────
+
+@router.get("/conversations", summary="List conversations with all accepted friends")
+def get_conversations(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return friend_service.get_conversations(db, current_user.id)
+
+@router.get("/conversations/{friend_id}/messages", summary="Get 2-way conversation history with a friend")
+def get_conversation_history(
+    friend_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return friend_service.get_conversation_messages(db, current_user.id, friend_id)
+
+@router.post("/messages", status_code=status.HTTP_201_CREATED, summary="Send direct message to a friend")
+def send_direct_message(
+    msg_in: EncouragementCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    res = friend_service.send_encouragement(db, current_user.id, msg_in)
+    return {
+        "id": res.id,
+        "sender_id": res.sender_id,
+        "recipient_id": res.recipient_id,
+        "content": res.message,
+        "message": res.message,
+        "is_read": res.is_read,
+        "created_at": res.created_at.isoformat() if res.created_at else None
+    }
 
 @router.post("/encourage", status_code=status.HTTP_201_CREATED, summary="Send encouragement message")
 def send_encouragement(
@@ -112,6 +161,15 @@ def mark_read(
 ):
     friend_service.mark_message_read(db, current_user.id, message_id)
     return {"message": "Marked as read"}
+
+@router.put("/conversations/{friend_id}/read", summary="Mark conversation with a friend as read")
+def mark_conversation_read(
+    friend_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    friend_service.get_conversation_messages(db, current_user.id, friend_id)
+    return {"message": "Conversation marked as read"}
 
 # ── Focus Together ──────────────────────────────────────────────────────────
 

@@ -53,8 +53,15 @@ class FriendService:
         return result
 
     def send_friend_request(self, db: Session, requester_id: str, req: FriendRequest) -> Friendship:
-        """Send a friend request to a user by email."""
-        addressee = db.query(User).filter(User.email == req.addressee_email).first()
+        """Send a friend request to a user by email or ID."""
+        target_id = req.friend_id or req.addressee_id
+        if target_id:
+            addressee = db.query(User).filter(User.id == target_id).first()
+        elif req.addressee_email:
+            addressee = db.query(User).filter(User.email == req.addressee_email).first()
+        else:
+            raise HTTPException(status_code=400, detail="Must provide friend email or friend ID")
+
         if not addressee:
             raise HTTPException(status_code=404, detail="User not found")
         if addressee.id == requester_id:
@@ -269,29 +276,190 @@ class FriendService:
     # ── Encouragement Messages ──────────────────────────────────────────────
 
     def send_encouragement(self, db: Session, sender_id: str, msg_in: EncouragementCreate) -> EncouragementMessage:
-        """Send an encouragement message to a friend."""
+        """Send an encouragement message or direct message to a friend."""
+        recipient_id = msg_in.recipient_id or msg_in.friend_id
+        text_message = msg_in.message or msg_in.content
+        if not recipient_id or not text_message:
+            raise HTTPException(status_code=400, detail="Recipient and message content required")
+
         # Verify friendship
         is_friend = db.query(Friendship).filter(
             or_(
-                and_(Friendship.requester_id == sender_id, Friendship.addressee_id == msg_in.recipient_id),
-                and_(Friendship.requester_id == msg_in.recipient_id, Friendship.addressee_id == sender_id)
+                and_(Friendship.requester_id == sender_id, Friendship.addressee_id == recipient_id),
+                and_(Friendship.requester_id == recipient_id, Friendship.addressee_id == sender_id)
             ),
             Friendship.status == "accepted"
         ).first()
         if not is_friend:
-            raise HTTPException(status_code=403, detail="Can only send messages to friends")
+            raise HTTPException(status_code=403, detail="Can only send messages to accepted friends")
 
         msg = EncouragementMessage(
             id=str(uuid.uuid4()),
             sender_id=sender_id,
-            recipient_id=msg_in.recipient_id,
+            recipient_id=recipient_id,
             challenge_id=msg_in.challenge_id,
-            message=msg_in.message
+            message=text_message
         )
         db.add(msg)
         db.commit()
         db.refresh(msg)
         return msg
+
+    def get_conversation_messages(self, db: Session, user_id: str, friend_id: str) -> List[dict]:
+        """Get two-way conversation history between user and a specific friend."""
+        is_friend = db.query(Friendship).filter(
+            or_(
+                and_(Friendship.requester_id == user_id, Friendship.addressee_id == friend_id),
+                and_(Friendship.requester_id == friend_id, Friendship.addressee_id == user_id)
+            ),
+            Friendship.status == "accepted"
+        ).first()
+        if not is_friend:
+            raise HTTPException(status_code=403, detail="Can only view messages with accepted friends")
+
+        messages = db.query(EncouragementMessage).filter(
+            or_(
+                and_(EncouragementMessage.sender_id == user_id, EncouragementMessage.recipient_id == friend_id),
+                and_(EncouragementMessage.sender_id == friend_id, EncouragementMessage.recipient_id == user_id)
+            )
+        ).order_by(EncouragementMessage.created_at.asc()).all()
+
+        # Mark incoming messages as read
+        unread_received = [m for m in messages if m.recipient_id == user_id and not m.is_read]
+        if unread_received:
+            for m in unread_received:
+                m.is_read = True
+            db.commit()
+
+        u_user = db.query(User).filter(User.id == user_id).first()
+        u_friend = db.query(User).filter(User.id == friend_id).first()
+
+        name_map = {
+            user_id: u_user.full_name or u_user.email if u_user else "You",
+            friend_id: u_friend.full_name or u_friend.email if u_friend else "Friend"
+        }
+
+        return [
+            {
+                "id": m.id,
+                "sender_id": m.sender_id,
+                "sender_name": name_map.get(m.sender_id, "User"),
+                "recipient_id": m.recipient_id,
+                "recipient_name": name_map.get(m.recipient_id, "User"),
+                "content": m.message,
+                "is_read": m.is_read,
+                "created_at": m.created_at.isoformat() if m.created_at else ""
+            }
+            for m in messages
+        ]
+
+    def get_conversations(self, db: Session, user_id: str) -> List[dict]:
+        """Get all friend conversations with latest message preview and unread counts."""
+        friends = self.get_friends(db, user_id)
+        conversations = []
+        for f in friends:
+            friend_id = f["id"]
+            last_msg = db.query(EncouragementMessage).filter(
+                or_(
+                    and_(EncouragementMessage.sender_id == user_id, EncouragementMessage.recipient_id == friend_id),
+                    and_(EncouragementMessage.sender_id == friend_id, EncouragementMessage.recipient_id == user_id)
+                )
+            ).order_by(EncouragementMessage.created_at.desc()).first()
+
+            unread_count = db.query(EncouragementMessage).filter(
+                EncouragementMessage.sender_id == friend_id,
+                EncouragementMessage.recipient_id == user_id,
+                EncouragementMessage.is_read == False
+            ).count()
+
+            conversations.append({
+                "friend_id": friend_id,
+                "friend_name": f.get("full_name") or f.get("email"),
+                "friend_email": f.get("email"),
+                "last_message": last_msg.message if last_msg else None,
+                "last_message_at": last_msg.created_at.isoformat() if last_msg and last_msg.created_at else None,
+                "last_message_sender_id": last_msg.sender_id if last_msg else None,
+                "unread_count": unread_count
+            })
+
+        conversations.sort(key=lambda x: x["last_message_at"] or "", reverse=True)
+        return conversations
+
+    def get_overview_stats(self, db: Session, user_id: str) -> dict:
+        """Get real overview statistics for Friends Growth Dashboard."""
+        friends = self.get_friends(db, user_id)
+        total_friends = len(friends)
+        pending_requests = len(self.get_pending_requests(db, user_id))
+        challenges = self.get_challenges(db, user_id)
+        active_challenges = len(challenges)
+
+        cutoff = datetime.utcnow() - timedelta(days=7)
+        friend_ids = [f["id"] for f in friends]
+        active_ids = set()
+        if friend_ids:
+            recent_msgs = db.query(EncouragementMessage.sender_id).filter(
+                EncouragementMessage.sender_id.in_(friend_ids),
+                EncouragementMessage.created_at >= cutoff
+            ).all()
+            for r in recent_msgs:
+                active_ids.add(r[0])
+            recent_parts = db.query(ChallengeParticipant.user_id).filter(
+                ChallengeParticipant.user_id.in_(friend_ids),
+                ChallengeParticipant.last_check_in >= cutoff
+            ).all()
+            for r in recent_parts:
+                active_ids.add(r[0])
+
+        active_friends = len(active_ids)
+        total_messages = db.query(EncouragementMessage).filter(
+            or_(EncouragementMessage.sender_id == user_id, EncouragementMessage.recipient_id == user_id)
+        ).count()
+
+        return {
+            "total_friends": total_friends,
+            "active_friends": active_friends,
+            "pending_requests": pending_requests,
+            "active_challenges": active_challenges,
+            "total_messages": total_messages
+        }
+
+    def get_ai_group_coach(self, db: Session, user_id: str) -> dict:
+        """AI Group Coach analyzing team velocity and inactive participants."""
+        challenges = self.get_challenges(db, user_id)
+        if not challenges:
+            return {
+                "recommendation": "You don't have any shared challenges yet. Create a challenge and invite a friend to build consistency together!",
+                "inactive_members": [],
+                "suggested_actions": [
+                    "Create a 30-Day Sprint Challenge",
+                    "Invite your peers to collaborate and track progress"
+                ]
+            }
+
+        inactive = []
+        for ch in challenges:
+            for p in ch.get("participants", []):
+                try:
+                    prog = int(float(p.get("progress_percent", 0) or 0))
+                except Exception:
+                    prog = 0
+                if prog < 30 and p.get("user_id") != user_id:
+                    inactive.append({"name": p.get("name"), "challenge": ch.get("title"), "progress": prog})
+
+        if inactive:
+            rec = f"You have {len(challenges)} active challenge(s). {len(inactive)} teammate(s) are below 30% progress. Send a cheer message to keep them motivated!"
+        else:
+            rec = f"Your group momentum is outstanding across all {len(challenges)} active challenge(s)! Keep checking in daily."
+
+        return {
+            "recommendation": rec,
+            "inactive_members": inactive,
+            "suggested_actions": [
+                "Send an encouragement message to your accountability partner",
+                "Log your daily challenge target before 8:00 PM",
+                "Host a Focus Together session with your team"
+            ]
+        }
 
     def get_messages(self, db: Session, user_id: str) -> List[dict]:
         """Get encouragement messages received by the user."""

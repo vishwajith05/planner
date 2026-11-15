@@ -1,6 +1,7 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
+from typing import Optional
 from backend.app.database.session import get_db
 from backend.app.core.security import decode_access_token
 from backend.app.models.user import User
@@ -42,3 +43,19 @@ def get_current_user(
         )
         
     return user
+
+def get_current_user_optional(
+    auth: HTTPAuthorizationCredentials = Depends(security_scheme),
+    db: Session = Depends(get_db)
+) -> Optional[User]:
+    if not auth or not auth.credentials:
+        return None
+    payload = decode_access_token(auth.credentials)
+    if not payload or "sub" not in payload:
+        return None
+    user_id = payload["sub"]
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user or not user.is_active:
+        return None
+    return user
+

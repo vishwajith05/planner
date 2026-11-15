@@ -11,9 +11,10 @@ from backend.app.schemas.analytics import AnalyticsSummary
 router = APIRouter()
 
 
-@router.get("/summary", response_model=AnalyticsSummary)
+@router.get("/", response_model=AnalyticsSummary, summary="Get comprehensive analytics summary")
+@router.get("/summary", response_model=AnalyticsSummary, summary="Get comprehensive analytics summary")
 def get_analytics_summary(
-    period: str = Query("this_week", description="today, this_week, this_month, or custom"),
+    period: str = Query("this_week", description="today, this_week, week, this_month, month, or custom"),
     start_date: Optional[str] = Query(None, description="YYYY-MM-DD for custom period"),
     end_date: Optional[str] = Query(None, description="YYYY-MM-DD for custom period"),
     current_user: User = Depends(get_current_user),
@@ -23,10 +24,16 @@ def get_analytics_summary(
     Returns comprehensive analytics summary based on real user activity data.
     Supports periods: today, this_week, this_month, custom.
     """
+    normalized_period = period
+    if period == "week":
+        normalized_period = "this_week"
+    elif period == "month":
+        normalized_period = "this_month"
+
     return analytics_service.get_summary(
         db=db,
         user_id=current_user.id,
-        period=period,
+        period=normalized_period,
         start_date=start_date,
         end_date=end_date,
     )

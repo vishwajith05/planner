@@ -123,6 +123,8 @@ export interface Milestone {
   id: string;
   goal_id: string;
   title: string;
+  priority?: Priority;
+  target_date?: string;
   is_completed: boolean;
   order_index: number;
   created_at: string;
@@ -134,11 +136,15 @@ export interface Goal {
   title: string;
   description?: string;
   category: string;
+  priority?: Priority;
   target_date?: string;
-  progress_percent: number;
-  is_completed: boolean;
+  status: 'in_progress' | 'completed' | 'paused';
+  progress_percentage?: number;
+  progress_percent?: number;
+  is_completed?: boolean;
   milestones: Milestone[];
   created_at: string;
+  updated_at?: string;
 }
 
 // ── Calendar ─────────────────────────────────────────────────────────────────

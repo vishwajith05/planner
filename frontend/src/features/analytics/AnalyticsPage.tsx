@@ -26,31 +26,18 @@ export const AnalyticsPage: React.FC = () => {
         const res = await apiGet<AnalyticsData>(`/analytics/?period=${period}`);
         setData(res);
       } catch {
-        // Realistic demo data
+        // Zero-state baseline when user has no activity yet or offline
         setData({
           period,
-          total_tasks: 28,
-          completed_tasks: 24,
-          completion_rate: 85.7,
-          total_focus_minutes: 360,
-          habit_streak_average: 9.4,
-          productivity_score: 88,
-          peak_hour: 10,
-          category_breakdown: {
-            Programming: { total: 10, completed: 9, rate: 90 },
-            Education: { total: 8, completed: 7, rate: 87.5 },
-            Cybersecurity: { total: 6, completed: 5, rate: 83.3 },
-            Personal: { total: 4, completed: 3, rate: 75 },
-          },
-          daily_completions: [
-            { date: 'Mon', count: 4 },
-            { date: 'Tue', count: 6 },
-            { date: 'Wed', count: 5 },
-            { date: 'Thu', count: 7 },
-            { date: 'Fri', count: 4 },
-            { date: 'Sat', count: 2 },
-            { date: 'Sun', count: 3 },
-          ],
+          total_tasks: 0,
+          completed_tasks: 0,
+          completion_rate: 0,
+          total_focus_minutes: 0,
+          habit_streak_average: 0,
+          productivity_score: 0,
+          peak_hour: undefined,
+          category_breakdown: {},
+          daily_completions: [],
         });
       } finally {
         setIsLoading(false);
@@ -60,11 +47,17 @@ export const AnalyticsPage: React.FC = () => {
   }, [period]);
 
   const categoryChartData = data?.category_breakdown
-    ? Object.entries(data.category_breakdown).map(([name, val]) => ({
-        name,
-        completed: val.completed,
-        total: val.total,
-      }))
+    ? Array.isArray(data.category_breakdown)
+      ? data.category_breakdown.map((item: any) => ({
+          name: item.category || item.name,
+          completed: item.completed_tasks ?? item.completed ?? 0,
+          total: item.total_tasks ?? item.total ?? 0,
+        }))
+      : Object.entries(data.category_breakdown).map(([name, val]: [string, any]) => ({
+          name,
+          completed: val.completed ?? val.completed_tasks ?? 0,
+          total: val.total ?? val.total_tasks ?? 0,
+        }))
     : [];
 
   return (

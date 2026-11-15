@@ -6,6 +6,7 @@ from backend.app.database.session import get_db
 from backend.app.api.deps import get_current_user
 from backend.app.models.user import User
 from backend.app.services.ai_service import ai_service
+from backend.app.ai.agents.chat_agent import chat_agent
 from backend.app.schemas.ai import (
     QuickAddRequest,
     QuickAddResponse,
@@ -16,9 +17,29 @@ from backend.app.schemas.ai import (
     RescheduleRequest,
     RescheduleResponse,
     WorkloadAnalysisResponse,
+    ChatRequest,
+    ChatResponse,
 )
 
 router = APIRouter()
+
+
+@router.post("/chat", response_model=ChatResponse, summary="Agentic Chat Assistant")
+def chat_endpoint(
+    payload: ChatRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not payload.message.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Message cannot be empty",
+        )
+    return chat_agent.handle_message(
+        db=db,
+        user_id=current_user.id,
+        message=payload.message,
+    )
 
 
 @router.post("/parse-task", response_model=QuickAddResponse)

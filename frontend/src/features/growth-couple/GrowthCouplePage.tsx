@@ -60,57 +60,17 @@ export const GrowthCouplePage: React.FC = () => {
         setAiSuggestions(ai?.suggestions || []);
       } else {
         setCouple(null);
+        setGoals([]);
+        setHabits([]);
+        setCheckins([]);
+        setAiSuggestions([]);
       }
     } catch {
-      // Demo active couple state
-      setCouple({
-        id: 'c1',
-        status: 'active',
-        invite_code: 'LOVE2026',
-        partner_a: { name: 'Alex Morgan', email: 'alex@example.com' },
-        partner_b: { name: 'Taylor Swift', email: 'taylor@example.com' },
-        is_partner_a: true,
-      });
-      setGoals([
-        {
-          id: 'cg1',
-          title: 'Learn Cloud Architecture & Pass Exam Together',
-          partner_a_progress: 75,
-          partner_b_progress: 65,
-          combined_progress: 70,
-        },
-      ]);
-      setHabits([
-        {
-          id: 'ch1',
-          title: 'Daily 30-Minute Evening Walk & Debrief',
-          partner_a_streak: 12,
-          partner_b_streak: 12,
-          today_i_done: true,
-        },
-      ]);
-      setCheckins([
-        {
-          user_name: 'Taylor',
-          is_me: false,
-          mood: 'great',
-          gratitude: 'Loved our morning coffee discussion',
-          win_of_day: 'Finished AWS module 4',
-          check_in_date: 'Today',
-        },
-      ]);
-      setAiSuggestions([
-        {
-          title: 'Schedule a Weekly Growth Review',
-          description: 'Every Sunday at 6 PM, review your shared goals and celebrate combined milestones.',
-          priority: 'high',
-        },
-        {
-          title: 'Collaborative Study Sprints',
-          description: 'Set a synchronized 25-minute Pomodoro session each weekday to study networking.',
-          priority: 'medium',
-        },
-      ]);
+      setCouple(null);
+      setGoals([]);
+      setHabits([]);
+      setCheckins([]);
+      setAiSuggestions([]);
     } finally {
       setIsLoading(false);
     }

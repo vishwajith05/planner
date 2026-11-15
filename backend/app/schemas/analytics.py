@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict
-from typing import List, Optional
+from typing import List, Optional, Any, Dict
 from datetime import datetime
 
 
@@ -55,39 +55,52 @@ class GoalAnalytics(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class DailyCompletionItem(BaseModel):
+    date: str
+    count: int
+
+
 class AnalyticsSummary(BaseModel):
+    # Period
+    period: str = "this_week"
+    period_start: str
+    period_end: str
+
     # Task metrics
-    total_tasks: int
-    completed_tasks: int
-    pending_tasks: int
-    overdue_tasks: int
-    cancelled_tasks: int
-    in_progress_tasks: int
+    total_tasks: int = 0
+    completed_tasks: int = 0
+    pending_tasks: int = 0
+    overdue_tasks: int = 0
+    cancelled_tasks: int = 0
+    in_progress_tasks: int = 0
 
     # Completion rates
-    daily_completion_rate: float
-    weekly_completion_rate: float
-    monthly_completion_rate: float
+    completion_rate: float = 0.0
+    daily_completion_rate: float = 0.0
+    weekly_completion_rate: float = 0.0
+    monthly_completion_rate: float = 0.0
 
     # Time tracking
-    total_estimated_minutes: int
-    total_actual_minutes: int
-    total_focus_minutes: int
+    total_estimated_minutes: int = 0
+    total_actual_minutes: int = 0
+    total_focus_minutes: int = 0
+
+    # Frontend UI analytics fields
+    productivity_score: int = 0
+    habit_streak_average: float = 0.0
+    peak_hour: Optional[int] = None
+    daily_completions: List[DailyCompletionItem] = []
 
     # Sub-analytics
     habits: HabitAnalytics
     focus: FocusAnalytics
     goals: GoalAnalytics
 
-    # Category breakdown
-    category_breakdown: List[CategoryBreakdown]
+    # Category breakdown (List of CategoryBreakdown for tests & charts)
+    category_breakdown: List[CategoryBreakdown] = []
 
     # Trends (day-by-day)
-    trends: List[ProductivityTrend]
-
-    # Period info
-    period_start: str
-    period_end: str
+    trends: List[ProductivityTrend] = []
 
     model_config = ConfigDict(from_attributes=True)
 

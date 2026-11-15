@@ -35,15 +35,15 @@ export const DashboardPage: React.FC = () => {
       const data = await apiGet<DashboardStats>('/dashboard/');
       setStats(data);
     } catch {
-      // fallback metrics if DB empty
+      // zero-state baseline when user has no activity yet or offline
       setStats({
         today_tasks: 0,
         completed_today: 0,
         pending_tasks: 0,
         overdue_tasks: 0,
-        current_streak: 3,
-        focus_minutes_today: 50,
-        productivity_score: 84,
+        current_streak: 0,
+        focus_minutes_today: 0,
+        productivity_score: 0,
         upcoming_tasks: [],
         today_schedule: [],
       });

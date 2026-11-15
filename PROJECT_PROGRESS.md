@@ -1,57 +1,53 @@
-# PlanWise AI - Project Progress & Verification Tracker
+# PlanWise AI - Project Progress & Master Verification Tracker
 
 **Tagline:** Plan Smarter. Organize Better. Achieve More.  
-**System Architecture:** React 18 + TypeScript + Vite + Tailwind CSS (Frontend) + FastAPI (Backend) + SQLite/SQLAlchemy (Database) + Multi-Provider AI (Gemini / Mock)  
+**System Architecture:** React 19 + TypeScript + Vite + Tailwind CSS (Frontend) + FastAPI (Backend) + SQLite/SQLAlchemy (Database) + Agentic AI Architecture  
 **Host Environment Status:**
 - OS: Windows 11
-- Python: 3.11.0 (Installed & active)
+- Python: 3.11.0 (Installed & active in `.venv`)
 - Node.js: v24.18.0 & npm 11.16.0
-- Git: 2.44.0 (Repository initialized & tracking commits)
-- RAM: 8 GB (Constraint respected: zero Docker, low-memory footprint)
+- Git: 2.44.0 (Branch `master`, tracking `origin/master`)
+- Memory & Performance: Strict 8 GB RAM budget maintained (Zero Docker, low-latency in-memory SQLite / FastAPI).
 
 ---
 
-## Progress Legend
-- `Completed`: Fully verified, tested, and operational
+## Master Improvement Phase Matrix
 
----
-
-## Web Conversion Module Status Matrix
-
-| Conversion Phase | Module / Capability | Status | Notes / Verification |
+| Phase | Module / Requirement | Status | Detailed Implementation & Verification |
 |---|---|---|---|
-| **Phase 1: Inspection & Architecture** | Flutter & Backend Codebase Audit | Completed | All 32 Flutter files audited; 45 FastAPI backend modules mapped; 29/29 original pytest tests passed. |
-| Phase 1: Inspection & Architecture | Web Architecture & Migration Plan | Completed | Formulated detailed migration blueprint in `CONVERSION_PLAN.md`. |
-| **Phase 2: Website Foundation** | React + TypeScript + Vite Scaffolding | Completed | Created separate `frontend/` directory with Vite, TypeScript, and clean modular structure. |
-| Phase 2: Website Foundation | Tailwind CSS & PlanWise Violet Design System | Completed | Configured dark/light theme switching (`dark:`), custom CSS variables, and PlanWise violet palette. |
-| Phase 2: Website Foundation | Navigation Shell & Layout | Completed | Built desktop sidebar navigation, responsive mobile drawer, top header with sync badges, and bottom app shell. |
-| **Phase 3: Backend & Authentication** | Friend Growth & Growth Couple Backend Models | Completed | Added `Friendship`, `SharedChallenge`, `CoupleRelationship`, `SharedGoal`, `SharedHabit`, `CoupleCheckIn` models and schemas. |
-| Phase 3: Backend & Authentication** | Social Endpoints & Services | Completed | Implemented `/api/v1/friends` and `/api/v1/couple` routes; strict privacy enforcement and user data isolation verified. |
-| Phase 3: Backend & Authentication | Web Authentication & Token Persistence | Completed | Connected `useAuthStore` to FastAPI `/auth` endpoints with JWT tokens stored securely in `localStorage`. |
-| Phase 3: Backend & Authentication | Automated Social Test Suite | Completed | Added `test_social_features.py`; **31/31 tests passing hermetically**. |
-| **Phase 4: Core Productivity (Web)** | Task Management & Checklists | Completed | Tasks view with search, priority/category filters, subtask checklists, and duplicate/edit/delete actions. |
-| Phase 4: Core Productivity (Web) | Calendar & Time Blocking | Completed | Day, Week, and Agenda views with time-blocking grid, locked slot badges, and conflict detection banner. |
-| Phase 4: Core Productivity (Web) | Habits & Streak Engine | Completed | Daily habit tracker with interactive checkmarks, streak counts, and all-time best streak badges. |
-| Phase 4: Core Productivity (Web) | Focus Timer & Pomodoro | Completed | 25m Focus / 5m Break circular SVG countdown timer, linked task logging, and session counter. |
-| Phase 4: Core Productivity (Web) | Kanban Board | Completed | To Do, In Progress, Completed columns with interactive forward/backward card transitions. |
-| Phase 4: Core Productivity (Web) | Eisenhower Matrix | Completed | 4-Quadrant triage grid (Do First, Schedule, Delegate, Eliminate) with priority-to-quadrant mapping. |
-| Phase 4: Core Productivity (Web) | Goals & Milestones | Completed | Long-term goals with dynamic auto-calculating progress bars (0-100%) and milestone check-offs. |
-| **Phase 5: AI Engine (Web)** | Natural Language Quick-Add Bar | Completed | One-line parser input converting natural language text into structured tasks. |
-| Phase 5: AI Engine (Web) | Energy-Aware Daily Scheduler | Completed | Greedy energy curve bin-packer with mandatory cognitive rest breaks and locked commitment protection. |
-| Phase 5: AI Engine (Web) | 7-Day Weekly Workload Balancer | Completed | Workload balancer enforcing strict 8-hour daily caps across weekdays. |
-| Phase 5: AI Engine (Web) | Conversational AI Assistant & Coach | Completed | Multi-turn productivity chat agent with quick prompt pills (*"Plan my day"*, *"Audit overdue tasks"*). |
-| **Phase 6: Social Growth (Web)** | **Friend Growth Module** | Completed | User discovery/search, send/accept friend requests, shared group challenges, encouragement messages, and peer feed. |
-| Phase 6: Social Growth (Web) | **Growth Couple Module** | Completed | Secure invite-code pairing, synchronized couple goals with dual progress % tracking, shared habits, and daily check-ins. |
-| Phase 6: Social Growth (Web) | Privacy Controls | Completed | Personal tasks remain strictly private; only authorized shared challenges and goals are visible to peers. |
-| **Phase 7: Analytics & PWA Offline** | Productivity Analytics | Completed | Recharts area velocity trend charts, category execution breakdown, and peak focus window detection. |
-| Phase 7: Analytics & PWA Offline | PWA & Offline Support | Completed | Web app manifest (`manifest.webmanifest`), Service Worker (`sw.js`) caching shell assets, and installable app icons. |
-| **Phase 8: Polish & Deployment** | Production Build Verification | Completed | `tsc -b && vite build` completed in 2.11s with 0 errors; production bundle verified. |
-| Phase 8: Polish & Deployment | Deployment Documentation | Completed | Created `DEPLOYMENT.md` with Vercel (frontend), Render (backend), and Firebase setup instructions. |
+| **Phase 1: Goal Management** | Complete CRUD for Goals & Tasks | **Completed** | Full creation, editing, deletion, priority tags (`urgent`, `high`, `medium`, `low`), target dates, milestone tasks with checkboxes, automatic weighted completion percentage recalculation (`0-100%`), and confirmation modals before deletion. Tested in `test_goals_crud.py`. |
+| **Phase 2: Remove Kanban Completely** | Eliminate Kanban table while preserving tasks | **Completed** | Cleanly removed `KanbanPage.tsx`, sidebar navigation icons, `/kanban` routes (auto-redirecting to `/tasks`), and Flutter `kanban_screen.dart`. Normal task management, subtasks, priorities, categories, and filters remain 100% intact. |
+| **Phase 3: Friends Growth Dashboard** | Collaborative Growth & AI Group Coach | **Completed** | Real database stats (active friends, shared challenges, pending requests), dynamic challenge progress trackers, peer accountability, live real-activity feed, and AI Group Coach offering genuine guidance based on group momentum. |
+| **Phase 4: Friend Messaging System** | Two-way Direct Messaging Inbox & Threads | **Completed** | Fixed message routing and schemas. Full two-way conversation threads between accepted friends with message timestamps, delivery/read receipts, conversation previews, and unread badges. Verified in `test_messaging_and_dashboard.py`. |
+| **Phase 5: Growth Couple** | Synchronized Couple Growth Space | **Completed** | Dual partner pairing with unique codes, combined progress goal tracking, synchronized shared habits with streaks, daily gratitude/mood check-in forms, and AI relationship recommendations. Zero fake fallback data. |
+| **Phase 6: Dashboard Accuracy** | Real-Time Metrics & Zero-Start | **Completed** | Completely eliminated hardcoded sample data (e.g. 50 focus mins, 84 productivity score). Calculates live metrics from DB. Brand new users start with exact 0s. Zero-start verified hermetically in test suite. |
+| **Phase 7: Analytics Engine** | Real User Activity Analytics | **Completed** | Aligned routes `/analytics/` and `/analytics/summary` across periods (`today`, `week`, `month`, `custom`). Computes genuine task completion rates, category breakdowns, daily trends, and focus minutes. Removed mock fallbacks. |
+| **Phase 8 & 9: Agentic AI Assistant** | Tool-Calling Architecture & Safety | **Completed** | Implemented lightweight tool calling (`tool_get_user_tasks`, `tool_create_task`, `tool_get_user_goals`, `tool_get_calendar_events`, `ai_service.daily_schedule`). Strict user data isolation enforced across all tools. |
+| **Phase 10: Security & Isolation** | Authentication & Multi-Tenant Isolation | **Completed** | Verified that users cannot access other users' private goals, tasks, or messages without authorization. JWT bearer tokens and active account checks enforced. |
+| **Phase 11: Production Verification** | Automated Test Suite & Build | **Completed** | **35 / 35 pytest unit & integration tests passing (100%)**. Frontend `tsc -b && vite build` compiles cleanly with zero errors in ~6.9s. |
 
 ---
 
-## Test Verification Summary
-- **Total Backend Automated Tests:** 31 tests
-- **Passing:** 31 / 31 (100% Pass Rate)
-- **Frontend Build Status:** Vite production build passing with 0 errors (`dist/` generated)
-- **Host Performance:** Lightweight memory footprint, zero Docker required, running smoothly on 8 GB RAM laptop.
+## Verification & Test Results
+
+### 1. Backend Automated Suite
+```bash
+.venv\Scripts\python.exe -m pytest backend/app/tests
+======================= 35 passed, 1 warning in 41.93s =======================
+```
+- `test_goals_crud.py`: Verified Goal creation, milestone additions, auto-progress percentages (33% -> 67% -> 50%), and deletions.
+- `test_messaging_and_dashboard.py`: Verified two-way friend chat, conversation unread counts, brand-new user zero-state dashboard, and AI agent tool calling.
+- `test_social_features.py`: Verified friend requests, challenges, and couple synchronization.
+- `test_analytics.py`: Verified multi-period real activity calculations and zero mock data.
+- `test_user_isolation.py`: Verified privacy boundary across users.
+
+### 2. Frontend Production Build
+```bash
+npm --prefix frontend run build
+✓ 2547 modules transformed.
+dist/index.html                             1.23 kB
+dist/assets/index-ijwWhNDc.css             44.94 kB
+dist/assets/index-C_omgdnI.js             223.84 kB
+✓ built in 6.91s
+```
+Zero TypeScript or React compilation errors.

@@ -346,6 +346,9 @@ class AnalyticsService:
         p_start, p_end = self._resolve_period(period, start_date, end_date)
 
         task_m = self._task_metrics(db, user_id, p_start, p_end)
+        total_tasks = task_m.get("total_tasks", 0)
+        completed_tasks = task_m.get("completed_tasks", 0)
+        overall_completion_rate = round((completed_tasks / total_tasks * 100), 1) if total_tasks > 0 else 0.0
 
         # Total focus minutes across all time
         total_focus = (
@@ -357,14 +360,40 @@ class AnalyticsService:
             .scalar()
         )
 
+        habits_data = self._habit_analytics(db, user_id, p_start, p_end)
+        focus_data = self._focus_analytics(db, user_id, p_start, p_end)
+        goals_data = self._goal_analytics(db, user_id, p_start, p_end)
+        cats_data = self._category_breakdown(db, user_id, p_start, p_end)
+        trends_data = self._trends(db, user_id, p_start, p_end)
+
+        # Productivity score
+        if total_tasks == 0 and int(total_focus or 0) == 0:
+            productivity_score = 0
+        else:
+            task_score = (completed_tasks / total_tasks * 60) if total_tasks > 0 else 0.0
+            focus_score = min(30.0, (focus_data.focus_minutes_this_period / 60.0) * 30.0)
+            streak_score = min(10.0, float(habits_data.current_best_streak))
+            productivity_score = min(100, int(round(task_score + focus_score + streak_score)))
+
+        daily_completions = [
+            {"date": t.date[5:] if len(t.date) >= 10 else t.date, "count": t.tasks_completed}
+            for t in trends_data
+        ]
+
         return AnalyticsSummary(
             **task_m,
-            total_focus_minutes=int(total_focus),
-            habits=self._habit_analytics(db, user_id, p_start, p_end),
-            focus=self._focus_analytics(db, user_id, p_start, p_end),
-            goals=self._goal_analytics(db, user_id, p_start, p_end),
-            category_breakdown=self._category_breakdown(db, user_id, p_start, p_end),
-            trends=self._trends(db, user_id, p_start, p_end),
+            period=period,
+            completion_rate=overall_completion_rate,
+            productivity_score=productivity_score,
+            habit_streak_average=habits_data.average_completion_rate,
+            peak_hour=None,
+            daily_completions=daily_completions,
+            total_focus_minutes=int(total_focus or 0),
+            habits=habits_data,
+            focus=focus_data,
+            goals=goals_data,
+            category_breakdown=cats_data,
+            trends=trends_data,
             period_start=p_start.strftime("%Y-%m-%d"),
             period_end=p_end.strftime("%Y-%m-%d"),
         )
