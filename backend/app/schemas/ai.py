@@ -115,8 +115,14 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     reply: str
+    response: Optional[str] = None
     actions: List[Dict[str, Any]] = []  # suggested actions the user can confirm
     data: Optional[Dict[str, Any]] = None
+
+    def __init__(self, **data):
+        super().__init__(**data)
+        if not self.response:
+            self.response = self.reply
 
 
 # ---------- Goal Breakdown ----------

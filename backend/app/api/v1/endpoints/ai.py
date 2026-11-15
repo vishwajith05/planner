@@ -61,8 +61,9 @@ async def parse_quick_add_task(
 
 
 @router.post("/daily-schedule", response_model=DailyScheduleResponse)
+@router.post("/schedule/daily", response_model=DailyScheduleResponse)
 def generate_daily_schedule(
-    payload: DailyScheduleRequest,
+    payload: Optional[DailyScheduleRequest] = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -70,33 +71,36 @@ def generate_daily_schedule(
     Generates a conflict-free, energy-balanced daily schedule.
     Returns preview data for user confirmation.
     """
+    p = payload or DailyScheduleRequest()
     result = ai_service.daily_schedule(
         db=db,
         user_id=current_user.id,
-        date=payload.date,
-        day_start_hour=payload.day_start_hour,
-        day_end_hour=payload.day_end_hour,
+        date=p.date,
+        day_start_hour=p.day_start_hour,
+        day_end_hour=p.day_end_hour,
     )
     return result
 
 
 @router.post("/weekly-plan", response_model=WeeklyPlanResponse)
+@router.post("/schedule/weekly", response_model=WeeklyPlanResponse)
 def generate_weekly_plan(
-    payload: WeeklyPlanRequest,
+    payload: Optional[WeeklyPlanRequest] = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
     Distributes pending tasks across a 7-day week balancing daily workload.
     """
+    p = payload or WeeklyPlanRequest()
     result = ai_service.weekly_plan(
         db=db,
         user_id=current_user.id,
-        week_start=payload.week_start,
-        day_start_hour=payload.day_start_hour,
-        day_end_hour=payload.day_end_hour,
-        rest_days=payload.rest_days,
-        max_minutes_per_day=payload.max_minutes_per_day,
+        week_start=p.week_start,
+        day_start_hour=p.day_start_hour,
+        day_end_hour=p.day_end_hour,
+        rest_days=p.rest_days,
+        max_minutes_per_day=p.max_minutes_per_day,
     )
     return result
 

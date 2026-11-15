@@ -223,7 +223,8 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: string;
-  actions?: Array<{ label: string; action: string; params?: Record<string, unknown> }>;
+  actions?: Array<{ type?: string; label?: string; action?: string; destination?: string; text?: string; data?: any }>;
+  data?: any;
 }
 
 // ── Friend Growth ─────────────────────────────────────────────────────────────

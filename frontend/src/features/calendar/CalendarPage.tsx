@@ -28,33 +28,20 @@ export const CalendarPage: React.FC = () => {
 
   const fetchCalendar = async () => {
     try {
-      const data = await apiGet<{ events: CalendarEvent[]; conflicts: Array<{ event_a: string; event_b: string; message: string }> }>('/calendar/events');
-      setEvents(data.events || []);
-      setConflicts(data.conflicts || []);
+      const data = await apiGet<any>('/calendar/events');
+      if (Array.isArray(data)) {
+        setEvents(data);
+        setConflicts([]);
+      } else if (data && typeof data === 'object') {
+        setEvents(data.events || []);
+        setConflicts(data.conflicts || []);
+      } else {
+        setEvents([]);
+        setConflicts([]);
+      }
     } catch {
-      // Demo events if endpoint is empty
-      setEvents([
-        {
-          id: '1',
-          user_id: 'user1',
-          title: 'Deep Work: Core Architecture',
-          start_time: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
-          end_time: new Date(Date.now() + 1000 * 60 * 60 * 4).toISOString(),
-          is_fixed: true,
-          color: '#8B5CF6',
-          created_at: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          user_id: 'user1',
-          title: 'Team Sync & Milestone Review',
-          start_time: new Date(Date.now() + 1000 * 60 * 60 * 5).toISOString(),
-          end_time: new Date(Date.now() + 1000 * 60 * 60 * 6).toISOString(),
-          is_fixed: false,
-          color: '#3B82F6',
-          created_at: new Date().toISOString(),
-        },
-      ]);
+      setEvents([]);
+      setConflicts([]);
     }
   };
 

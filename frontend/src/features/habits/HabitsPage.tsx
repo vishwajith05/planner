@@ -27,50 +27,9 @@ export const HabitsPage: React.FC = () => {
   const fetchHabits = async () => {
     try {
       const data = await apiGet<Habit[]>('/habits/');
-      setHabits(data);
+      setHabits(Array.isArray(data) ? data : []);
     } catch {
-      // Demo habits
-      setHabits([
-        {
-          id: 'h1',
-          user_id: 'u1',
-          title: 'Daily LeetCode Problem & Algorithm Practice',
-          category: 'Programming',
-          frequency: 'daily',
-          target_days_per_week: 7,
-          streak_count: 14,
-          best_streak: 21,
-          is_archived: false,
-          today_completed: true,
-          created_at: new Date().toISOString(),
-        },
-        {
-          id: 'h2',
-          user_id: 'u1',
-          title: 'Morning 20m Focused Reading & Study',
-          category: 'Education',
-          frequency: 'daily',
-          target_days_per_week: 7,
-          streak_count: 8,
-          best_streak: 12,
-          is_archived: false,
-          today_completed: false,
-          created_at: new Date().toISOString(),
-        },
-        {
-          id: 'h3',
-          user_id: 'u1',
-          title: 'Physical Workout & Hydration Target',
-          category: 'Health',
-          frequency: 'daily',
-          target_days_per_week: 5,
-          streak_count: 5,
-          best_streak: 19,
-          is_archived: false,
-          today_completed: false,
-          created_at: new Date().toISOString(),
-        },
-      ]);
+      setHabits([]);
     } finally {
       setIsLoading(false);
     }
