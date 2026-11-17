@@ -1,12 +1,29 @@
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.app.core.config import settings
 from backend.app.core.middleware import SecurityHeadersMiddleware, RateLimitMiddleware
 from backend.app.api.v1.api import api_router
-from backend.app.database.session import engine, Base
+from backend.app.database.session import engine, Base, SessionLocal
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 # Create tables if not existing
 Base.metadata.create_all(bind=engine)
+
+# Startup data integrity check — log how many users/tables exist
+try:
+    from backend.app.models.user import User
+    db = SessionLocal()
+    user_count = db.query(User).count()
+    table_names = Base.metadata.tables.keys()
+    logger.info(f"[STARTUP] Database has {user_count} users across {len(table_names)} tables: {list(table_names)}")
+    if user_count == 0:
+        logger.warning("[STARTUP] Database is EMPTY — no users found. If this is unexpected, the DB file may have been reset.")
+    db.close()
+except Exception as e:
+    logger.error(f"[STARTUP] Database integrity check failed: {e}")
 
 app = FastAPI(
     title=settings.PROJECT_NAME,

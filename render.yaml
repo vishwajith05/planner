@@ -13,6 +13,6 @@ services:
       - key: DATABASE_URL
         value: sqlite:///./planwise.db
       - key: SECRET_KEY
-        generateValue: true
+        value: CHANGE-ME-generate-a-64-char-secret-with-python-secrets-token_urlsafe
       - key: BACKEND_CORS_ORIGINS
         value: '["*"]'

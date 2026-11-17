@@ -35,9 +35,14 @@ const createApiClient = (): AxiosInstance => {
       const url = error.config?.url || '';
       const isAuthAttempt = url.includes('/auth/login') || url.includes('/auth/register');
       if (error.response?.status === 401 && !isAuthAttempt) {
-        localStorage.removeItem('planwise_token');
-        localStorage.removeItem('planwise_user');
-        if (window.location.pathname !== '/login') {
+        // Only clear token and redirect if we're not already on the login page
+        // This prevents an infinite redirect loop
+        const token = localStorage.getItem('planwise_token');
+        if (token) {
+          localStorage.removeItem('planwise_token');
+          localStorage.removeItem('planwise_user');
+        }
+        if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
           window.location.href = '/login';
         }
       }
